@@ -2,7 +2,10 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { AllExceptionsFilter } from 'src/common/filters/all-exception.filter';
+import { RepeatSubmitGuard } from 'src/common/guards/repeat-submit.guard';
 
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 @Global()
 @Module({
   imports: [
@@ -29,6 +32,18 @@ import { RedisModule } from '@nestjs-modules/ioredis';
         configService.get<any>('redis'),
       inject: [ConfigService],
     }),
+  ],
+  providers: [
+    //全局异常过滤器
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+    //阻止连续提交守卫
+    {
+      provide: APP_GUARD,
+      useClass: RepeatSubmitGuard,
+    },
   ],
   exports: [],
 })
