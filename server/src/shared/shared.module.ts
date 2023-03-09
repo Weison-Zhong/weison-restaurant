@@ -4,8 +4,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { AllExceptionsFilter } from 'src/common/filters/all-exception.filter';
 import { RepeatSubmitGuard } from 'src/common/guards/repeat-submit.guard';
-
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ReponseTransformInterceptor } from 'src/common/interceptors/reponse-transform.interceptor';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { SharedService } from './shared.service';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 @Global()
 @Module({
   imports: [
@@ -34,6 +36,7 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
     }),
   ],
   providers: [
+    SharedService,
     //全局异常过滤器
     {
       provide: APP_FILTER,
@@ -44,7 +47,17 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
       provide: APP_GUARD,
       useClass: RepeatSubmitGuard,
     },
+    /* 全局返回值转化拦截器 */
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ReponseTransformInterceptor,
+    },
+    //jwt守卫
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
-  exports: [],
+  exports: [SharedService],
 })
 export class SharedModule { }

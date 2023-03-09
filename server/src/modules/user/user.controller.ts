@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiException } from 'src/common/exceptions/api.exception';
-import { ReqAddUserDto, ReqUpdateUserDto, ReqUserListDto } from './dto/req-user.dto';
+import { ReqAddUserDto, ReqResetPwdDto, ReqUpdateUserDto, ReqUserListDto } from './dto/req-user.dto';
 import { UserService } from './user.service';
 import { RepeatSubmit } from 'src/common/decorators/repeat-submit.decorator';
 import { User } from './entities/user.entity';
@@ -60,5 +60,16 @@ export class UserController {
     };
   }
 
-
+  //重置密码
+  @RepeatSubmit()
+  @Put('resetPwd')
+  async resetPwd(
+    @Body() reqResetPwdDto: ReqResetPwdDto,
+  ) {
+    const { userId, password } = reqResetPwdDto
+    await this.userService.resetPwd(
+      userId,
+      password,
+    );
+  }
 }

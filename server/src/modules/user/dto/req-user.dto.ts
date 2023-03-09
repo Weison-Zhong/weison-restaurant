@@ -38,3 +38,13 @@ export class ReqUserListDto extends PaginationDto {
     @IsObject()
     params: ParamsDto;
 }
+
+export class ReqResetPwdDto {
+    /* 用户ID */
+    @IsNumber()
+    userId: number;
+
+    /* 新密码 */
+    @IsString()
+    password: string;
+}

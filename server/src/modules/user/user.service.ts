@@ -1,15 +1,26 @@
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { reverse } from 'dns';
+import Redis from 'ioredis';
 import moment from 'moment';
+import { ERedisKey } from 'src/common/contants/redis.contant';
+import { SharedService } from 'src/shared/shared.service';
 import { Between, FindOptionsWhere, In, Like, Repository } from 'typeorm';
 import { ReqAddUserDto, ReqUpdateUserDto, ReqUserListDto } from './dto/req-user.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) { }
+  constructor(@InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly sharedService: SharedService, @InjectRedis() private readonly redis: Redis,) { }
   async addUser(reqAddUserDto: ReqAddUserDto) {
+    if (reqAddUserDto.password) {
+      reqAddUserDto.salt = this.sharedService.generateUUID();
+      reqAddUserDto.password = this.sharedService.md5(
+        reqAddUserDto.password + reqAddUserDto.salt,
+      );
+    }
     await this.userRepository.save(reqAddUserDto);
   }
 
@@ -80,5 +91,21 @@ export class UserService {
       rows: result[0],
       total: result[1],
     };
+  }
+
+  /* id查询用户 */
+  async findById(userId: number) {
+    return await this.userRepository.findOneBy({ userId });
+  }
+
+  /* 更改密码 */
+  async resetPwd(userId: number, password: string) {
+    const user = await this.findById(userId);
+    user.salt = this.sharedService.generateUUID();
+    user.password = this.sharedService.md5(password + user.salt);
+    await this.userRepository.save(user);
+    if (await this.redis.get(`${ERedisKey.PASSWORD_VERSION}:${userId}`)) {
+      await this.redis.set(`${ERedisKey.PASSWORD_VERSION}:${userId}`, 2); //调整密码版本，强制用户重新登录
+    }
   }
 }

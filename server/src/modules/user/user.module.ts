@@ -10,5 +10,6 @@ import { User } from './entities/user.entity';
   ],
   controllers: [UserController],
   providers: [UserService],
+  exports: [UserService], // 如果别的地方如auth.service.ts有注入，则这里必须要导出否则会报错
 })
 export class UserModule { }
