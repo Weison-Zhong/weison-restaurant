@@ -1,8 +1,9 @@
 import { BaseEntity } from "src/common/entities/base.entity";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from "class-validator";
 import { ApiHideProperty } from "@nestjs/swagger";
+import { Role } from "../../role/entities/role.entity";
 @Entity()
 export class User extends BaseEntity {
     @PrimaryGeneratedColumn({ comment: '用户id' })
@@ -115,4 +116,9 @@ export class User extends BaseEntity {
         default: '1',
     })
     delFlag: string;
+
+    @ApiHideProperty()
+    @ManyToMany(() => Role, (role) => role.users)
+    @JoinTable()
+    roles: Role[];
 }

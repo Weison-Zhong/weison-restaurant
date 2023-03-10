@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { reverse } from 'dns';
 import Redis from 'ioredis';
 import moment from 'moment';
-import { ERedisKey } from 'src/common/contants/redis.contant';
+import { EDeleteFlag, ERedisKey } from '../../common/contants/enum';
 import { SharedService } from 'src/shared/shared.service';
 import { Between, FindOptionsWhere, In, Like, Repository } from 'typeorm';
 import { ReqAddUserDto, ReqUpdateUserDto, ReqUserListDto } from './dto/req-user.dto';
@@ -62,8 +62,7 @@ export class UserService {
   async list(
     reqUserListDto: ReqUserListDto
   ) {
-    console.log({ reqUserListDto });
-    const where: FindOptionsWhere<User> = { delFlag: '1' };
+    const where: FindOptionsWhere<User> = { delFlag: EDeleteFlag.NORMAL };
     if (reqUserListDto.username) {
       where.username = Like(`%${reqUserListDto.username}%`);
     }
@@ -86,7 +85,6 @@ export class UserService {
       .skip(reqUserListDto.skip)
       .take(reqUserListDto.take)
       .getManyAndCount();
-    console.log({ result });
     return {
       rows: result[0],
       total: result[1],

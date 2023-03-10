@@ -2,7 +2,7 @@ import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { Injectable } from '@nestjs/common';
 import {
   ERedisKey
-} from 'src/common/contants/redis.contant';
+} from 'src/common/contants/enum';
 import { ApiException } from 'src/common/exceptions/api.exception';
 import { SharedService } from 'src/shared/shared.service';
 import { UserService } from '../user/user.service';

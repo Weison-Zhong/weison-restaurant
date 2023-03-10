@@ -7,7 +7,16 @@ export function setupSwagger(app: INestApplication): void {
     .setDescription('Api文档V1')
     .setTermsOfService('https://docs.nestjs.cn/8/introduction')
     .setLicense('MIT', '')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: '粘贴login返回的token值',
+        in: 'header',
+      },
+    )
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('swagger-doc', app, document);

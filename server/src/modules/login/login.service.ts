@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import Redis from 'ioredis';
-import { ERedisKey } from 'src/common/contants/redis.contant';
+import { ERedisKey } from 'src/common/contants/enum';
 import { Payload } from './login.interface';
 @Injectable()
 export class LoginService {
