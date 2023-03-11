@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DataObj } from 'src/common/class/data-obj.class';
 import { RepeatSubmit } from 'src/common/decorators/repeat-submit.decorator';
 import { PaginationPipe } from 'src/common/pipes/pagination.pipe';
-import { ReqAddRoleDto, ReqRoleListDto, ReqUpdateRoleDto } from './dto/req-role.dto';
+import { ReqAddRoleDto, ReqRoleListDto, ReqUpdateRoleDto, ReqUpdateRolePermissionDto } from './dto/req-role.dto';
 import { RoleService } from './role.service';
 
 @ApiTags('角色管理')
@@ -50,5 +50,14 @@ export class RoleController {
   async one(@Param('roleId') roleId: number) {
     const role = await this.roleService.findById(roleId);
     return DataObj.create(role);
+  }
+
+  /* 分配数据权限 */
+  @RepeatSubmit()
+  @Post('updatePermission')
+  async updatePermission(
+    @Body() reqUpdateRolePermissionDto: ReqUpdateRolePermissionDto,
+  ) {
+    await this.roleService.updatePermission(reqUpdateRolePermissionDto);
   }
 }

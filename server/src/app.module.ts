@@ -5,6 +5,7 @@ import configuration from './config/default.config';
 import { UserModule } from './modules/user/user.module';
 import { LoginModule } from './modules/login/login.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { LogModule } from './modules/monitor/log/log.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -15,6 +16,7 @@ import { AuthModule } from './modules/auth/auth.module';
     UserModule,
     LoginModule,
     AuthModule,
+    LogModule
   ],
   controllers: [],
   providers: [],

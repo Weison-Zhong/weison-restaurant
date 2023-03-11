@@ -10,7 +10,7 @@ export class AjaxResult {
   }
 
   static success(data?: any, msg = '操作成功') {
-    return new AjaxResult('1', msg, data);
+    return new AjaxResult(200, msg, data);
   }
 
   static error(msg = '操作失败', code = 0) {

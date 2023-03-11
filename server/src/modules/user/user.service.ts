@@ -1,5 +1,5 @@
 import { InjectRedis } from '@nestjs-modules/ioredis';
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { reverse } from 'dns';
 import Redis from 'ioredis';
@@ -9,10 +9,13 @@ import { SharedService } from 'src/shared/shared.service';
 import { Between, FindOptionsWhere, In, Like, Repository } from 'typeorm';
 import { ReqAddUserDto, ReqUpdateUserDto, ReqUserListDto } from './dto/req-user.dto';
 import { User } from './entities/user.entity';
+import { RoleService } from '../role/role.service';
 
 @Injectable()
 export class UserService {
   constructor(@InjectRepository(User) private readonly userRepository: Repository<User>,
+    @Inject(forwardRef(() => RoleService))
+    private readonly roleService: RoleService,
     private readonly sharedService: SharedService, @InjectRedis() private readonly redis: Redis,) { }
   async addUser(reqAddUserDto: ReqAddUserDto) {
     if (reqAddUserDto.password) {
@@ -21,6 +24,8 @@ export class UserService {
         reqAddUserDto.password + reqAddUserDto.salt,
       );
     }
+    const roles = await this.roleService.listByIdArr(reqAddUserDto.roleIds);
+    reqAddUserDto.roles = roles;
     await this.userRepository.save(reqAddUserDto);
   }
 
@@ -47,6 +52,8 @@ export class UserService {
   }
 
   async updateUser(reqUpdateUserDto: ReqUpdateUserDto) {
+    const roles = await this.roleService.listByIdArr(reqUpdateUserDto.roleIds);
+    reqUpdateUserDto.roles = roles;
     await this.userRepository.save(reqUpdateUserDto);
   }
 
@@ -54,6 +61,7 @@ export class UserService {
   async userAllInfo(userId: number): Promise<User> {
     return await this.userRepository
       .createQueryBuilder('user')
+      .leftJoinAndSelect('user.roles', 'role', `role.delFlag = ${EDeleteFlag.NORMAL}`)
       .where('user.userId = :userId', { userId })
       .getOne();
   }

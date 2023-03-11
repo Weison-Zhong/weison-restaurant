@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EDeleteFlag, EStatusCode } from 'src/common/contants/enum';
 import { SharedService } from 'src/shared/shared.service';
-import { FindOptionsWhere, Like, Repository } from 'typeorm';
+import { FindOptionsWhere, In, Like, Repository } from 'typeorm';
 import { ReqAddMenuDto, ReqMenuListDto } from './dto/req-menu.dto';
 import { Menu } from './entities/menu.entity';
 
@@ -78,5 +79,29 @@ export class MenuService {
       .orderBy('menu.order', 'ASC')
       .addOrderBy('menu.createTime', 'ASC')
       .getRawMany();
+  }
+
+  /* 通过Id数组查询 */
+  async listByIdArr(menuIdArr: number[]) {
+    return this.menuRepository.find({
+      where: {
+        menuId: In(menuIdArr),
+      },
+    });
+  }
+
+  /* 根据角色数组查询所有权限标识 */
+  async getAllPermissionsByRoles(roleIdArr: number[]) {
+    const menuList = await this.menuRepository
+      .createQueryBuilder('menu')
+      .select('menu.permission')
+      .innerJoin('menu.roles', 'role', `role.delFlag = ${EDeleteFlag.NORMAL}`)
+      .where('menu.permission is not null')
+      .andWhere("menu.permission != ''")
+      .andWhere(`role.status = ${EStatusCode.NORMAL} and role.roleId IN (:...roleIdArr)`, {
+        roleIdArr,
+      })
+      .getMany();
+    return menuList.map((item) => item.permission);
   }
 }

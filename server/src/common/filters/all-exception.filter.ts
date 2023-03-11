@@ -37,6 +37,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     } else {
       message = `${exception}`;
     }
+    console.log({ exception });
     return {
       status,
       result: AjaxResult.error(message, code),

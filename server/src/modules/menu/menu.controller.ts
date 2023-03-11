@@ -47,10 +47,10 @@ export class MenuController {
     return DataObj.create(menutArr);
   }
 
-  /* 通过id查询列表 */
   @Get(':menuId')
   async one(@Param('menuId') menuId: number) {
     const menu = await this.menuService.findRawById(menuId);
     return DataObj.create(menu);
   }
+
 }

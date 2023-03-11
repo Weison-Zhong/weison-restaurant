@@ -7,7 +7,7 @@ const { APP_PORT } = config;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  app.setGlobalPrefix('weison/restaurant-admin');
   app.use(
     helmet({
       contentSecurityPolicy: false, //取消https强制转换

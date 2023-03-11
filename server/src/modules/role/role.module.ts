@@ -13,6 +13,7 @@ import { MenuModule } from '../menu/menu.module';
     forwardRef(() => MenuModule),
   ],
   controllers: [RoleController],
-  providers: [RoleService]
+  providers: [RoleService],
+  exports: [RoleService],
 })
 export class RoleModule { }

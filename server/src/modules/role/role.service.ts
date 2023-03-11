@@ -1,15 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import moment from 'moment';
 import { EDeleteFlag } from 'src/common/contants/enum';
-import { Between, FindOptionsWhere, Like, Repository } from 'typeorm';
-import { ReqAddRoleDto, ReqRoleListDto } from './dto/req-role.dto';
+import { Between, FindOptionsWhere, In, Like, Repository } from 'typeorm';
+import { MenuService } from '../menu/menu.service';
+import { ReqAddRoleDto, ReqRoleListDto, ReqUpdateRolePermissionDto } from './dto/req-role.dto';
 import { Role } from './entities/role.entity';
 
 @Injectable()
 export class RoleService {
   constructor(
-    @InjectRepository(Role) private readonly roleRepository: Repository<Role>
+    @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
+    @Inject(forwardRef(() => MenuService))
+    private readonly menuService: MenuService,
   ) { }
 
   async addOrUpdate(reqAddRoleDto: ReqAddRoleDto) {
@@ -26,6 +29,12 @@ export class RoleService {
   }
   /* 通过id查询 */
   async findById(roleId: number) {
+    // return await this.roleRepository
+    //   .createQueryBuilder('role')
+    //   .leftJoinAndSelect('role.menus', 'menu')
+    //   .where('role.roleId = :roleId', { roleId })
+    //   .getOne();
+
     return this.roleRepository.findOneBy({ roleId });
   }
 
@@ -73,5 +82,22 @@ export class RoleService {
       rows: result[0],
       total: result[1],
     };
+  }
+
+  // 分配权限
+  async updatePermission(reqUpdateRolePermissionDto: ReqUpdateRolePermissionDto) {
+    const menuList = await this.menuService.listByIdArr(reqUpdateRolePermissionDto.menuIds);
+    reqUpdateRolePermissionDto.menus = menuList;
+    await this.roleRepository.save(reqUpdateRolePermissionDto)
+  }
+
+  /* 通过id数组查询 */
+  listByIdArr(idArr: number[]) {
+    return this.roleRepository.find({
+      where: {
+        delFlag: EDeleteFlag.NORMAL,
+        roleId: In(idArr),
+      },
+    });
   }
 }
