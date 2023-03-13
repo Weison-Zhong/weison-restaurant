@@ -6,6 +6,7 @@ import { Request } from 'express';
 import { ReqLoginDto } from './dto/req-login.dto';
 import { LocalAuthGuard } from 'src/common/guards/local-auth.guard';
 import { UserEnum, User } from 'src/common/decorators/user.decorator';
+import { DataObj } from 'src/common/class/data-obj.class';
 
 @ApiTags('登录')
 @ApiBearerAuth()
@@ -22,7 +23,9 @@ export class LoginController {
     @Body() reqLoginDto: ReqLoginDto,
     @Req() req: Request,
   ) {
-    return await this.loginService.login(req);
+
+    const token = await this.loginService.login(req);
+    return DataObj.create(token);
   }
 
   /* 获取用户信息 */

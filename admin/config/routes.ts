@@ -49,7 +49,19 @@ export default [
     name: 'list.table-list',
     icon: 'table',
     path: '/list',
-    component: './TableList',
+    component: './UserManage',
+  },
+  {
+    name: 'system',
+    icon: 'table',
+    path: '/system',
+    routes: [
+      {
+        path: '/system/user',
+        name: 'user',
+        component: './UserManage',
+      },
+    ],
   },
   {
     path: '/',

@@ -19,6 +19,16 @@ interface ResponseStructure {
   showType?: ErrorShowType;
 }
 
+
+const authHeaderInterceptor = (url: string, options: RequestConfig) => {
+  const token = localStorage.getItem('token')
+  const authHeader = { Authorization: `Bearer ${token}` };
+  return {
+    url: `${url}`,
+    options: { ...options, interceptors: true, headers: authHeader },
+  };
+};
+
 /**
  * @name 错误处理
  * pro 自带的错误处理， 可以在这里做自己的改动
@@ -40,36 +50,10 @@ export const errorConfig: RequestConfig = {
     },
     // 错误接收及处理
     errorHandler: (error: any, opts: any) => {
+      console.log({ error });
       if (opts?.skipErrorHandler) throw error;
       // 我们的 errorThrower 抛出的错误。
-      if (error.name === 'BizError') {
-        const errorInfo: ResponseStructure | undefined = error.info;
-        if (errorInfo) {
-          const { errorMessage, errorCode } = errorInfo;
-          switch (errorInfo.showType) {
-            case ErrorShowType.SILENT:
-              // do nothing
-              break;
-            case ErrorShowType.WARN_MESSAGE:
-              message.warning(errorMessage);
-              break;
-            case ErrorShowType.ERROR_MESSAGE:
-              message.error(errorMessage);
-              break;
-            case ErrorShowType.NOTIFICATION:
-              notification.open({
-                description: errorMessage,
-                message: errorCode,
-              });
-              break;
-            case ErrorShowType.REDIRECT:
-              // TODO: redirect
-              break;
-            default:
-              message.error(errorMessage);
-          }
-        }
-      } else if (error.response) {
+      if (error.response) {
         // Axios 的错误
         // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
         message.error(`Response status:${error.response.status}`);
@@ -77,33 +61,33 @@ export const errorConfig: RequestConfig = {
         // 请求已经成功发起，但没有收到响应
         // \`error.request\` 在浏览器中是 XMLHttpRequest 的实例，
         // 而在node.js中是 http.ClientRequest 的实例
-        message.error('None response! Please retry.');
+        message.error('服务器无响应，请重试');
       } else {
         // 发送请求时出了点问题
-        message.error('Request error, please retry.');
+        message.error('请求出错，请重试');
       }
     },
   },
 
+
+
   // 请求拦截器
-  requestInterceptors: [
-    (config: RequestOptions) => {
-      // 拦截请求配置，进行个性化处理。
-      const url = config?.url?.concat('?token = 123');
-      return { ...config, url };
-    },
-  ],
+  requestInterceptors: [authHeaderInterceptor],
 
   // 响应拦截器
   responseInterceptors: [
     (response) => {
       // 拦截响应数据，进行个性化处理
-      const { data } = response as unknown as ResponseStructure;
-
-      if (data?.success === false) {
-        message.error('请求失败！');
+      const { data: axiosData } = response as unknown as ResponseStructure;
+      const { code, msg, data } = axiosData ?? {}
+      if (code !== 200) {
+        return message.error(msg);
       }
-      return response;
+      return axiosData
+      // console.log({axiosData});
+      // console.log({data});
+      // return axiosData;
     },
   ],
 };
+

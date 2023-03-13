@@ -58,7 +58,8 @@ export class UserController {
   async list(
     @Query(PaginationPipe) reqUserListDto: ReqUserListDto,
   ) {
-    return this.userService.list(reqUserListDto);
+    const userList = await this.userService.list(reqUserListDto);
+    return DataObj.create(userList)
   }
 
 

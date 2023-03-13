@@ -1,6 +1,7 @@
 import Footer from '@/components/Footer';
-import { login } from '@/services/ant-design-pro/api';
+// import { login } from '@/services/ant-design-pro/api';
 import { getFakeCaptcha } from '@/services/ant-design-pro/login';
+import { login } from '@/services/login';
 import {
   AlipayCircleOutlined,
   LockOutlined,
@@ -16,11 +17,11 @@ import {
   ProFormText,
 } from '@ant-design/pro-components';
 import { useEmotionCss } from '@ant-design/use-emotion-css';
-import { FormattedMessage, history, SelectLang, useIntl, useModel, Helmet } from '@umijs/max';
+import { FormattedMessage, Helmet, history, SelectLang, useIntl, useModel } from '@umijs/max';
 import { Alert, message, Tabs } from 'antd';
-import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
+import Settings from '../../../../config/defaultSettings';
 
 const ActionIcons = () => {
   const langClassName = useEmotionCss(({ token }) => {
@@ -114,34 +115,47 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (values: API.LoginParams) => {
-    try {
-      // 登录
-      const msg = await login({ ...values, type });
-      if (msg.status === 'ok') {
-        const defaultLoginSuccessMessage = intl.formatMessage({
-          id: 'pages.login.success',
-          defaultMessage: '登录成功！',
-        });
-        message.success(defaultLoginSuccessMessage);
-        await fetchUserInfo();
-        const urlParams = new URL(window.location.href).searchParams;
-        history.push(urlParams.get('redirect') || '/');
-        return;
-      }
-      console.log(msg);
-      // 如果失败去设置用户错误信息
-      setUserLoginState(msg);
-    } catch (error) {
-      const defaultLoginFailureMessage = intl.formatMessage({
-        id: 'pages.login.failure',
-        defaultMessage: '登录失败，请重试！',
-      });
-      console.log(error);
-      message.error(defaultLoginFailureMessage);
+  // const handleSubmit = async (values: API.LoginParams) => {
+  //   try {
+  //     // 登录
+  //     const msg = await login({ ...values, type });
+  //     if (msg.status === 'ok') {
+  //       const defaultLoginSuccessMessage = intl.formatMessage({
+  //         id: 'pages.login.success',
+  //         defaultMessage: '登录成功！',
+  //       });
+  //       message.success(defaultLoginSuccessMessage);
+  //       await fetchUserInfo();
+  //       const urlParams = new URL(window.location.href).searchParams;
+  //       history.push(urlParams.get('redirect') || '/');
+  //       return;
+  //     }
+  //     console.log(msg);
+  //     // 如果失败去设置用户错误信息
+  //     setUserLoginState(msg);
+  //   } catch (error) {
+  //     const defaultLoginFailureMessage = intl.formatMessage({
+  //       id: 'pages.login.failure',
+  //       defaultMessage: '登录失败，请重试！',
+  //     });
+  //     console.log(error);
+  //     message.error(defaultLoginFailureMessage);
+  //   }
+  // };
+  const { status, type: loginType } = userLoginState;
+
+  const handleLogin = async (values) => {
+    const res = await login({
+      username: values.username,
+      password: values.password,
+    });
+    if (res) {
+      const { token } = res;
+      console.log({ token });
+      localStorage.setItem('token', token);
+      history.push('/');
     }
   };
-  const { status, type: loginType } = userLoginState;
 
   return (
     <div className={containerClassName}>
@@ -181,7 +195,8 @@ const Login: React.FC = () => {
             <ActionIcons key="icons" />,
           ]}
           onFinish={async (values) => {
-            await handleSubmit(values as API.LoginParams);
+            handleLogin(values);
+            // await handleSubmit(values as API.LoginParams);
           }}
         >
           <Tabs
